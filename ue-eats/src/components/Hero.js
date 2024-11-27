@@ -11,7 +11,7 @@ const Hero = () => {
     >
       <div className="bg-black bg-opacity-80 p-10 rounded-lg text-center">
         <h1 className="text-6xl font-extrabold text-white mb-4 drop-shadow-lg">
-          Welcome to UE EATS
+          Welcome to education EATS
         </h1>
         <p className="text-2xl text-gray-200 mb-5">
          Here are the our avalible items
