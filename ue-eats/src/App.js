@@ -25,6 +25,8 @@ import Bananajuice from './components/Banana juice'
 import Ratee from './components/Ratee'
 import Footer from './components/footer/Footer';
 import Services from './components/Services';
+import AddCart from './components/AddCart';
+import AdminPanel from './components/AdminPanel';
 function App() {
   return (
     <>
@@ -53,6 +55,8 @@ function App() {
         <Route path='/Banana juice' element={<><Navbar/><Bananajuice/></>}/>
         <Route path='/Ratee' element={<><Navbar/><Ratee/></>}/>
         <Route path='/Services' element={<><Navbar/><Services/></>}/>
+        <Route path='/AddCart' element={<><Navbar/><AddCart/></>}/>
+        <Route path='/AdminPanel' element={<><AdminPanel/></>}/>
       </Routes>
       <Footer/>
     </Router>

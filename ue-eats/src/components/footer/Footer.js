@@ -22,10 +22,10 @@ function Footer() {
       <div>
         <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
         <ul class="space-y-2">
-          <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
-          <li><a href="#" class="text-gray-400 hover:text-white">Services</a></li>
-          <li><a href="#" class="text-gray-400 hover:text-white">Portfolio</a></li>
-          <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+          <li><a href="/hero" class="text-gray-400 hover:text-white">Home</a></li>
+          <li><a href="/Services" class="text-gray-400 hover:text-white">Services</a></li>
+          <li><a href="/team" class="text-gray-400 hover:text-white">Portfolio</a></li>
+          <li><a href="/contactt" class="text-gray-400 hover:text-white">Contact</a></li>
         </ul>
       </div>
 
