@@ -519,7 +519,7 @@ function Loginn() {
                                 onClick={handleRegisterClick}
                                 className="text-purple-700 hover:text-purple-800 font-bold"
                             >
-                                Register
+                                Register As Student
                             </button>
                         </p>
                     </div>

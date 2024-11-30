@@ -175,6 +175,16 @@ const Navbar = () => {
           >
             Services
           </NavLink>
+          <NavLink
+            to="/Beforeorder"
+            className={({ isActive }) =>
+              isActive
+                ? "text-blue-400 px-3 block"
+                : "text-white px-3 block hover:text-gray-400"
+            }
+          >
+            Beforeorder
+          </NavLink>
 
           {/* Shopping Cart Icon */}
           <button
