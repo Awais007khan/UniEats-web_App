@@ -28,6 +28,7 @@ import Services from './components/Services';
 import AddCart from './components/AddCart';
 import AdminPanel from './components/AdminPanel';
 import Beforeorder from './components/Beforeorder'
+import AppD from './components/AppD';
 function App() {
   return (
     <>
@@ -59,7 +60,9 @@ function App() {
         <Route path='/AddCart' element={<><Navbar/><AddCart  name="anas"/></>}/>
         <Route path='/AdminPanel' element={<><AdminPanel/></>}/>
         <Route path='/Beforeorder' element={<><Beforeorder/></>}/>
+        <Route path='/AdminD' element={<><AppD/></>}/>
       </Routes>
+      <AppD/>
       <Footer/>
     </Router>
     </>
