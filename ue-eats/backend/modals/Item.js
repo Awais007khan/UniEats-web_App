@@ -20,4 +20,7 @@ const itemSchema = new Schema({
     },
 });
 
-module.exports  =  mongoose.model('items',itemSchema)
+// module.exports  =  mongoose.model('items',itemSchema)
+const  Item= mongoose.model('item', itemSchema)
+// User.createIndexes()
+module.exports = Item

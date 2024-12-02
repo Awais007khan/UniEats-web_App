@@ -96,7 +96,7 @@ const Team = () => {
             <ul className="space-y-2">
               <li className="flex items-center justify-center ">
                 <span className="text-orange-500 mr-2">•</span>
-                Slice
+                
               </li>
               <li className="flex items-center justify-center">
                 <span className="text-orange-500 mr-2">•</span>
