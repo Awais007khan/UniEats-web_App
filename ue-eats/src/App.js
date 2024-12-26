@@ -102,6 +102,7 @@ import AddCart from './components/AddCart';
 import AdminPanel from './components/AdminPanel';
 import Beforeorder from './components/Beforeorder'
 import AppD from './components/AppD';
+import ContactUs from './components/ContactUs';
 import { CartProvider } from "./components/Context/CartContext";
 
 function App() {
@@ -111,8 +112,8 @@ function App() {
     <Router>
       {/* Always show Hero on the home page */}
       <Routes>
-      <Route path="/" element={<><Navbar/><Hero /><Home /><Team /><Services/><AppD/></>} /> {/* Default route */}
-      <Route path="/hero" element={<><Navbar/><Hero /><Home /><Team /><Services/><AppD/></>} /> {/* Default route */}
+      <Route path="/" element={<><Navbar/><Hero /><Home /><Beforeorder /><Services/><AppD/></>} /> {/* Default route */}
+      <Route path="/hero" element={<><Navbar/><Hero /><Home /><Beforeorder /><Services/><AppD/></>} /> {/* Default route */}
         <Route path="/Loginn" element={<><Navbar/><Loginn /></>} /> {/* Login route */}
         <Route path="/Singupp" element={<><Navbar/><Signupp /></>} /> {/* Signup route */}
         <Route path="/team" element={<><Navbar/><Team /><Services/></>} /> {/* Example route for Team */}
@@ -135,8 +136,9 @@ function App() {
         <Route path='/Services' element={<><Navbar/><Services/></>}/>
         <Route path='/AddCart' element={<><Navbar/><AddCart  name="anas"/></>}/>
         <Route path='/AdminPanel' element={<><AdminPanel/></>}/>
-        <Route path='/Beforeorder' element={<><Beforeorder/></>}/>
+        <Route path='/Beforeorder' element={<><Navbar/><Beforeorder/></>}/>
         <Route path='/AdminD' element={<><AppD/></>}/>
+        <Route path='/contact' element={<><ContactUs/></>}/>
       </Routes>
       <Footer/>
     </Router>

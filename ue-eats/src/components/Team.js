@@ -1840,7 +1840,10 @@ const Team = () => {
               >
                 View Details
               </button>
-              <button onClick={() => handleCartClick(member)}>Add to Cart</button>
+              <div className="mt-4">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onClick={() => handleCartClick(member)}>Add to Cart</button>
+                </div>
+              {/* <button onClick={() => handleCartClick(member)}>Add to Cart</button> */}
               <div className="mt-4">
                 {/* <button
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

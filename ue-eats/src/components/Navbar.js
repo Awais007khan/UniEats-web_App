@@ -105,8 +105,8 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-          <NavLink
-            to="/team"
+          {/* <NavLink
+            to="/beforeorder"
             className={({ isActive }) =>
               isActive
                 ? "text-blue-400 px-3 block"
@@ -114,8 +114,8 @@ const Navbar = () => {
             }
           >
             Items
-          </NavLink>
-          <NavLink
+          </NavLink> */}
+          {/* <NavLink
             to="/Comment"
             className={({ isActive }) =>
               isActive
@@ -124,7 +124,7 @@ const Navbar = () => {
             }
           >
             Comments
-          </NavLink>
+          </NavLink> */}
           <NavLink
             to="/Loginn"
             className={({ isActive }) =>
