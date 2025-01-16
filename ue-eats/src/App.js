@@ -103,12 +103,17 @@ import AdminPanel from './components/AdminPanel';
 import Beforeorder from './components/Beforeorder'
 import AppD from './components/AppD';
 import ContactUs from './components/ContactUs';
+import AddItem from './components/AddItem';
 import { CartProvider } from "./components/Context/CartContext";
+import { ItemsProvider } from "./components/Context/ItemContext";
+import Recently_addeditems from './components/Recently_addeditems';
+import AboutPage from './components/about_page';
 
 function App() {
   return (
     <>
       <CartProvider>
+      <ItemsProvider>
     <Router>
       {/* Always show Hero on the home page */}
       <Routes>
@@ -139,9 +144,13 @@ function App() {
         <Route path='/Beforeorder' element={<><Navbar/><Beforeorder/></>}/>
         <Route path='/AdminD' element={<><AppD/></>}/>
         <Route path='/contact' element={<><ContactUs/></>}/>
+        <Route path='/Add' element={<><AddItem/></>}/>
+        <Route path='/Newitems' element={<><Recently_addeditems/></>}/>
+        <Route path='/about' element={<><AboutPage/></>}/>
       </Routes>
       <Footer/>
     </Router>
+    </ItemsProvider>
     </CartProvider>
     </>
   );

@@ -177,15 +177,18 @@ const Item = require('../modals/Item')
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const multer = require ('multer')
+const fs = require('fs');
+const path = require('path');
 const JWt_SECRET = 'anasisagood$boy';
 // var fetchuser = require('../Middleware/fetchuser')
 // import fetchuser from '../Middleware/fetchuser';
 var jwt = require('jsonwebtoken');
 const Commet = require('../modals/Comet')
 const Rating = require('../modals/Rating')
-
-
+const app = express();
+const cors = require("cors");
 // Middleware to parse JSON bodies
+app.use(cors());
 router.use(express.json());
 
 // Route to handle user registration
@@ -314,52 +317,120 @@ let Success=false
     res.status(500).json({ message: 'Error in  placing the comment', error: err.message });
   }
 });
-
-
+// const { validationResult } = require('express-validator');
+const corsOptions = {
+  origin: 'http://localhost:3000', // Replace with your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Allow cookies if needed
+};
+app.use(cors(corsOptions));
+// app.use('/backend/uploads', express.static('G:/ueeats/ue-eats/backend/uploads'));
+app.use('/backend/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // Allow cross-origin access for images
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); 
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../uploads/');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true }); // Ensure directory exists
+    }
+    cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  }
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Ensure unique filenames using timestamps
+  },
 });
 
+// Set up file filter for Multer
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
   if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
+    cb(null, true); // Allow the file
   } else {
-    cb(new Error('Only JPEG, PNG, and JPG files are allowed'), false);
+    cb(new Error('Only JPEG, PNG, and JPG files are allowed'), false); // Reject the file
   }
 };
 
+// Initialize Multer with the storage and file filter
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
+});
 
-const upload = multer({ storage, fileFilter });
-
+// Route to add a new item with image
 router.post('/item', upload.single('image'), async (req, res) => {
-  let Success = false;
   try {
     const { name, role, intro, Price } = req.body;
 
+    // Validate required fields
     if (!req.file) {
-      return res.status(400).json({ message: 'Image is required' });
+      return res.status(400).json({ Success: false, message: 'Image is required' });
+    }
+    if (!name || !role || !intro || !Price || isNaN(Price)) {
+      return res.status(400).json({
+        Success: false,
+        message: 'All fields are required and Price must be a valid number',
+      });
     }
 
+    // Create and save the new item
     const newItem = new Item({
       name,
       role,
       intro,
-      Price,
-      image: req.file.filename, 
+      Price: parseFloat(Price), // Ensure Price is stored as a number
+      image: req.file.filename, // Store the image filename in the database
     });
+
     await newItem.save();
-    Success = true;
-    res.status(201).json({ message: 'New item has been placed successfully!', Success, item: newItem });
+
+    res.status(201).json({
+      Success: true,
+      message: 'New item has been added successfully!',
+      item: newItem,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error in placing the item', error: err.message });
+    console.error('Error saving item:', err);
+    res.status(500).json({
+      Success: false,
+      message: 'Internal server error while saving the item',
+      error: err.message,
+    });
+  }
+});
+// router.get('/items', async (req, res) => {
+//   const items = await Item.find(); // Replace with your database query
+//   res.json({ Success: true, items });
+// });
+router.get('/items', async (req, res) => {
+  try {
+    // Fetch all items from the database
+    const items = await Item.find().sort({ createdAt: -1 }); // Sort items by most recent
+
+    if (!items || items.length === 0) {
+      return res.status(404).json({
+        Success: false,
+        message: 'No items found in the database',
+      });
+    }
+
+    res.status(200).json({
+      Success: true,
+      items,
+    });
+  } catch (error) {
+    console.error('Error fetching items:', error.message);
+
+    res.status(500).json({
+      Success: false,
+      message: 'Internal server error while fetching items',
+      error: error.message,
+    });
   }
 });
 router.post('/rate', async (req, res) => {

@@ -14,7 +14,7 @@ app.use(cors())
 // })
 app.use(express.json())
 app.use('/api/auth',require('./routes/auth.js'))
-app.use('/api/item',require('./routes/items.js'))
+// app.use('/api/item',require('./routes/items.js'))
 
 app.listen(port,()=>{
     console.log(`Example app litening at http://localhost:${port}`)
