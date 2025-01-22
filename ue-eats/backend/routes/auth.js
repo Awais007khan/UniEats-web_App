@@ -187,11 +187,11 @@ const Commet = require('../modals/Comet')
 const Rating = require('../modals/Rating')
 const app = express();
 const cors = require("cors");
-// Middleware to parse JSON bodies
-app.use(cors());
+// Middleware to parse JSON bodiess
 router.use(express.json());
 
 // Route to handle user registration
+app.use(cors())
 router.post('/createuser', [
   body('name').notEmpty().withMessage('The name is invalid'),
   body('email').isEmail().withMessage('The email is invalid'),
@@ -245,7 +245,7 @@ router.post('/createuser', [
 // module.exports = router;
 
 // now for athentacating the user weather it is present in the database or not if not than show the error that the user you are entering is not present
-
+app.use(cors())
 router.post('/login', [
   body('email').isEmail().withMessage('The email is invalid').isEmail(),
   body('password').isLength({ min: 6 }).withMessage('The password cannot be blank').exists(),
@@ -283,6 +283,7 @@ router.post('/login', [
     res.status(500).send("Internal server eroor has been occured");
   }
 });
+app.use(cors())
 router.post('/create', async (req, res) => {
   let Success=false
   const { UserName,ItemName,DepartmentName,CurrentSemester,RoomNumber} = req.body;
@@ -303,6 +304,7 @@ router.post('/create', async (req, res) => {
       res.status(500).json({ message: 'Error in placing Order', error: error.message });
   }
 });
+app.use(cors())
 router.post('/commet', async (req, res) => {
 let Success=false
   try {
@@ -318,8 +320,9 @@ let Success=false
   }
 });
 // const { validationResult } = require('express-validator');
+app.use(cors())
 const corsOptions = {
-  origin: 'http://localhost:3000', // Replace with your frontend URL
+  origin: 'http://localhost:5000', // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow cookies if needed
@@ -362,12 +365,11 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
 });
 
-// Route to add a new item with image
+app.use(cors())
 router.post('/item', upload.single('image'), async (req, res) => {
   try {
     const { name, role, intro, Price } = req.body;
 
-    // Validate required fields
     if (!req.file) {
       return res.status(400).json({ Success: false, message: 'Image is required' });
     }
@@ -378,13 +380,12 @@ router.post('/item', upload.single('image'), async (req, res) => {
       });
     }
 
-    // Create and save the new item
     const newItem = new Item({
       name,
       role,
       intro,
-      Price: parseFloat(Price), // Ensure Price is stored as a number
-      image: req.file.filename, // Store the image filename in the database
+      Price: parseFloat(Price),
+      image: req.file.filename,
     });
 
     await newItem.save();
@@ -392,7 +393,10 @@ router.post('/item', upload.single('image'), async (req, res) => {
     res.status(201).json({
       Success: true,
       message: 'New item has been added successfully!',
-      item: newItem,
+      item: {
+        ...newItem.toObject(),
+        imageUrl: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`, // Include the image URL
+      },
     });
   } catch (err) {
     console.error('Error saving item:', err);
@@ -403,14 +407,10 @@ router.post('/item', upload.single('image'), async (req, res) => {
     });
   }
 });
-// router.get('/items', async (req, res) => {
-//   const items = await Item.find(); // Replace with your database query
-//   res.json({ Success: true, items });
-// });
+app.use(cors())
 router.get('/items', async (req, res) => {
   try {
-    // Fetch all items from the database
-    const items = await Item.find().sort({ createdAt: -1 }); // Sort items by most recent
+    const items = await Item.find().sort({ createdAt: -1 });
 
     if (!items || items.length === 0) {
       return res.status(404).json({
@@ -419,9 +419,14 @@ router.get('/items', async (req, res) => {
       });
     }
 
+    const itemsWithUrls = items.map(item => ({
+      ...item.toObject(),
+      imageUrl: `${req.protocol}://${req.get('host')}/uploads/${item.image}`,
+    }));
+
     res.status(200).json({
       Success: true,
-      items,
+      items: itemsWithUrls,
     });
   } catch (error) {
     console.error('Error fetching items:', error.message);
@@ -433,6 +438,7 @@ router.get('/items', async (req, res) => {
     });
   }
 });
+app.use(cors())
 router.post('/rate', async (req, res) => {
   let Success=false
   const { itemName, rating, } = req.body;

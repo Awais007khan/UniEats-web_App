@@ -147,6 +147,7 @@ function App() {
         <Route path='/Add' element={<><AddItem/></>}/>
         <Route path='/Newitems' element={<><Recently_addeditems/></>}/>
         <Route path='/about' element={<><AboutPage/></>}/>
+        <Route path='/contactus' element={<><ContactUs/></>}/>
       </Routes>
       <Footer/>
     </Router>
