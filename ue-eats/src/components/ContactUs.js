@@ -1,57 +1,111 @@
-import React from "react";
+import React, { useState } from "react";
+import image from "./Images/loginback.jpg";
 
 const ContactUs = () => {
+  const [formData, setFormData] = useState({
+    fullname: "",
+    emailaddress: "",
+    sendmessage: "",
+  });
+
+  const [message, setMessage] = useState("");
+
+  // Handle input change
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessage("Message sent successfully!");
+        setFormData({ fullname: "", emailaddress: "", sendmessage: "" }); // Clear form
+      } else {
+        setMessage("Failed to send message.");
+      }
+    } catch (error) {
+      setMessage("Something went wrong.");
+    }
+  };
+
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col"
+      style={{ backgroundImage: `url(${image})` }}
+    >
       {/* Hero Section */}
-      <section className="bg-[url('https://source.unsplash.com/1600x900/?city,building')] bg-cover bg-center h-60 flex items-center justify-center">
+      <section className="bg-opacity-50 h-60 flex items-center justify-center">
         <h1 className="text-4xl font-bold text-white bg-black bg-opacity-50 px-6 py-2 rounded">
           Contact Us
         </h1>
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-12">
+      <section className="py-12 flex-grow">
         <div className="container mx-auto px-6 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Form */}
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-3xl font-bold mb-6 text-gray-800">Get in Touch</h2>
-            <form>
+          <div className="bg-gray p-8 rounded-lg shadow-md">
+            <h2 className="text-3xl font-bold mb-6 text-white">Get in Touch</h2>
+            <form onSubmit={handleSubmit}>
               {/* Name */}
               <div className="mb-4">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="fullname" className="block text-white text-sm font-medium text-gray-700">
                   Full Name
                 </label>
                 <input
                   type="text"
-                  id="name"
+                  id="fullname"
+                  name="fullname"
+                  value={formData.fullname}
+                  onChange={handleChange}
                   placeholder="Your full name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
+                  required
+                  className="w-full px-4 py-2  border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
                 />
               </div>
 
               {/* Email */}
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="emailaddress" className="block text-white text-sm font-medium text-gray-700">
                   Email Address
                 </label>
                 <input
                   type="email"
-                  id="email"
+                  id="emailaddress"
+                  name="emailaddress"
+                  value={formData.emailaddress}
+                  onChange={handleChange}
                   placeholder="Your email address"
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
                 />
               </div>
 
               {/* Message */}
               <div className="mb-4">
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="sendmessage" className="block  text-sm font-medium text-white">
                   Message
                 </label>
                 <textarea
-                  id="message"
+                  id="sendmessage"
+                  name="sendmessage"
+                  value={formData.sendmessage}
+                  onChange={handleChange}
                   rows="4"
                   placeholder="Your message"
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
                 ></textarea>
               </div>
@@ -64,41 +118,26 @@ const ContactUs = () => {
                 Send Message
               </button>
             </form>
-          </div>
 
-          {/* Contact Information */}
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Contact Information</h2>
-            <p className="text-gray-600">
-              Have questions or want to discuss your advertising needs? Reach out to us!
-            </p>
-            <div>
-              <p className="font-medium text-gray-800">Address:</p>
-              <p className="text-gray-600">123 Billboard Avenue, New York, NY 10001</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">Phone:</p>
-              <p className="text-gray-600">+1 (555) 123-4567</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">Email:</p>
-              <p className="text-gray-600">info@billboardagency.com</p>
-            </div>
+            {/* Display success or error message */}
+            {message && <p className="mt-4 text-center text-green-600">{message}</p>}
           </div>
         </div>
       </section>
 
       {/* Map Section */}
-      <section className="bg-gray-200">
-        <div className="container mx-auto px-6 lg:px-20 py-12">
+      <section className="py-12">
+        <div className="container mx-auto px-6 lg:px-20">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">Find Us Here</h2>
-          <iframe
-            className="w-full h-96 rounded-lg shadow-lg"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609990784!2d-74.25987568762267!3d40.69767006770815!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c250b62d42d87d%3A0x9b7dcdaedc706d35!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1697296046272!5m2!1sen!2s"
-            allowFullScreen=""
-            loading="lazy"
-            title="Google Map"
-          ></iframe>
+          <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg">
+            <iframe
+              title="Google Map"
+              className="w-full h-full"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509234!2d144.95373531550456!3d-37.81627974202148!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d5df1e0b77b%3A0x5045675218ce6e0!2sMelbourne%2C%20Australia!5e0!3m2!1sen!2sus!4v1602574813914!5m2!1sen!2sus"
+              allowFullScreen=""
+              loading="lazy"
+            ></iframe>
+          </div>
         </div>
       </section>
     </div>

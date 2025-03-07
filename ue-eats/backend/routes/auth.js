@@ -185,6 +185,8 @@ const JWt_SECRET = 'anasisagood$boy';
 var jwt = require('jsonwebtoken');
 const Commet = require('../modals/Comet')
 const Rating = require('../modals/Rating')
+const Contact= require('../modals/Contact')
+const stripe = require("stripe")("pk_test_XXXXXXXXXXXXXXXXXXXXXXXX"); // Replace with your Stripe Secret Key
 const app = express();
 const cors = require("cors");
 // Middleware to parse JSON bodiess
@@ -319,53 +321,66 @@ let Success=false
     res.status(500).json({ message: 'Error in  placing the comment', error: err.message });
   }
 });
-// const { validationResult } = require('express-validator');
 app.use(cors())
-const corsOptions = {
-  origin: 'http://localhost:5000', // Replace with your frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow cookies if needed
-};
-app.use(cors(corsOptions));
-// app.use('/backend/uploads', express.static('G:/ueeats/ue-eats/backend/uploads'));
-app.use('/backend/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // Allow cross-origin access for images
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
+router.post('/contact', async (req, res) => {
+let Success=false
+  try {
+    const { fullname, emailaddress,sendmessage } = req.body;
+
+    const newContact = new Contact({ fullname, emailaddress,sendmessage});
+    await newContact.save();
+    Success=true
+    res.status(201).json({ message: 'Your message has been send  successfully!',Success, contact: newContact });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error in  sending the message', error: err.message });
+  }
+});
+router.post("/pay", async (req, res) => {
+  const { amount } = req.body;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100, // Convert to cents
+      currency: "pkr", // Use 'pkr' for PKR or your preferred currency
+    });
+
+    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Multer Storage Configuration
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true }); // Ensure directory exists
-    }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Ensure unique filenames using timestamps
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
-// Set up file filter for Multer
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // Allow the file
-  } else {
-    cb(new Error('Only JPEG, PNG, and JPG files are allowed'), false); // Reject the file
-  }
+  allowedTypes.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only JPEG, PNG, and JPG files are allowed'), false);
 };
 
-// Initialize Multer with the storage and file filter
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-app.use(cors())
+// Upload Image Route
 router.post('/item', upload.single('image'), async (req, res) => {
   try {
     const { name, role, intro, Price } = req.body;
@@ -390,12 +405,15 @@ router.post('/item', upload.single('image'), async (req, res) => {
 
     await newItem.save();
 
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    console.log('Generated Image URL:', imageUrl); // Debug log
+
     res.status(201).json({
       Success: true,
       message: 'New item has been added successfully!',
       item: {
         ...newItem.toObject(),
-        imageUrl: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`, // Include the image URL
+        imageUrl,
       },
     });
   } catch (err) {
@@ -407,7 +425,7 @@ router.post('/item', upload.single('image'), async (req, res) => {
     });
   }
 });
-app.use(cors())
+
 router.get('/items', async (req, res) => {
   try {
     const items = await Item.find().sort({ createdAt: -1 });
@@ -419,10 +437,14 @@ router.get('/items', async (req, res) => {
       });
     }
 
-    const itemsWithUrls = items.map(item => ({
-      ...item.toObject(),
-      imageUrl: `${req.protocol}://${req.get('host')}/uploads/${item.image}`,
-    }));
+    const itemsWithUrls = items.map(item => {
+      const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${item.image}`;
+      console.log('Generated Image URL:', imageUrl); // Debug log
+      return {
+        ...item.toObject(),
+        imageUrl,
+      };
+    });
 
     res.status(200).json({
       Success: true,
@@ -430,7 +452,6 @@ router.get('/items', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching items:', error.message);
-
     res.status(500).json({
       Success: false,
       message: 'Internal server error while fetching items',
@@ -438,6 +459,157 @@ router.get('/items', async (req, res) => {
     });
   }
 });
+
+// Fetch Items Route
+// router.get('/items', async (req, res) => {
+//   try {
+//     const items = await Item.find().sort({ createdAt: -1 });
+
+//     if (!items || items.length === 0) {
+//       return res.status(404).json({
+//         Success: false,
+//         message: 'No items found in the database',
+//       });
+//     }
+
+//     const itemsWithUrls = items.map(item => ({
+//       ...item.toObject(),
+//       imageUrl: `${req.protocol}://${req.get('host')}/uploads/${item.image}`,
+//     }));
+
+//     res.status(200).json({
+//       Success: true,
+//       items: itemsWithUrls,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching items:', error.message);
+//     res.status(500).json({
+//       Success: false,
+//       message: 'Internal server error while fetching items',
+//       error: error.message,
+//     });
+//   }
+// });
+
+// const { validationResult } = require('express-validator');
+// app.use(cors())
+// const corsOptions = {
+//   origin: 'http://localhost:5000', // Replace with your frontend URL
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true, // Allow cookies if needed
+// };
+// app.use(cors(corsOptions));
+// // app.use('/backend/uploads', express.static('G:/ueeats/ue-eats/backend/uploads'));
+// app.use('/backend/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', (req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*'); // Allow cross-origin access for images
+//   next();
+// }, express.static(path.join(__dirname, 'uploads')));
+
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const uploadDir = path.join(__dirname, '../uploads/');
+//     if (!fs.existsSync(uploadDir)) {
+//       fs.mkdirSync(uploadDir, { recursive: true }); // Ensure directory exists
+//     }
+//     cb(null, uploadDir);
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, `${Date.now()}-${file.originalname}`); // Ensure unique filenames using timestamps
+//   },
+// });
+
+// // Set up file filter for Multer
+// const fileFilter = (req, file, cb) => {
+//   const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+//   if (allowedTypes.includes(file.mimetype)) {
+//     cb(null, true); // Allow the file
+//   } else {
+//     cb(new Error('Only JPEG, PNG, and JPG files are allowed'), false); // Reject the file
+//   }
+// };
+
+// // Initialize Multer with the storage and file filter
+// const upload = multer({
+//   storage,
+//   fileFilter,
+//   limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
+// });
+
+// app.use(cors())
+// router.post('/item', upload.single('image'), async (req, res) => {
+//   try {
+//     const { name, role, intro, Price } = req.body;
+
+//     if (!req.file) {
+//       return res.status(400).json({ Success: false, message: 'Image is required' });
+//     }
+//     if (!name || !role || !intro || !Price || isNaN(Price)) {
+//       return res.status(400).json({
+//         Success: false,
+//         message: 'All fields are required and Price must be a valid number',
+//       });
+//     }
+
+//     const newItem = new Item({
+//       name,
+//       role,
+//       intro,
+//       Price: parseFloat(Price),
+//       image: req.file.filename,
+//     });
+
+//     await newItem.save();
+
+//     res.status(201).json({
+//       Success: true,
+//       message: 'New item has been added successfully!',
+//       item: {
+//         ...newItem.toObject(),
+//         imageUrl: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`, // Include the image URL
+//       },
+//     });
+//   } catch (err) {
+//     console.error('Error saving item:', err);
+//     res.status(500).json({
+//       Success: false,
+//       message: 'Internal server error while saving the item',
+//       error: err.message,
+//     });
+//   }
+// });
+// app.use(cors())
+// router.get('/items', async (req, res) => {
+//   try {
+//     const items = await Item.find().sort({ createdAt: -1 });
+
+//     if (!items || items.length === 0) {
+//       return res.status(404).json({
+//         Success: false,
+//         message: 'No items found in the database',
+//       });
+//     }
+
+//     const itemsWithUrls = items.map(item => ({
+//       ...item.toObject(),
+//       imageUrl: `${req.protocol}://${req.get('host')}/uploads/${item.image}`,
+//     }));
+
+//     res.status(200).json({
+//       Success: true,
+//       items: itemsWithUrls,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching items:', error.message);
+
+//     res.status(500).json({
+//       Success: false,
+//       message: 'Internal server error while fetching items',
+//       error: error.message,
+//     });
+//   }
+// });
 app.use(cors())
 router.post('/rate', async (req, res) => {
   let Success=false

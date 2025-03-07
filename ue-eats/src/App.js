@@ -108,6 +108,7 @@ import { CartProvider } from "./components/Context/CartContext";
 import { ItemsProvider } from "./components/Context/ItemContext";
 import Recently_addeditems from './components/Recently_addeditems';
 import AboutPage from './components/about_page';
+import PaymentPage from './components/Payment_page';
 
 function App() {
   return (
@@ -146,8 +147,9 @@ function App() {
         <Route path='/contact' element={<><ContactUs/></>}/>
         <Route path='/Add' element={<><AddItem/></>}/>
         <Route path='/Newitems' element={<><Recently_addeditems/></>}/>
-        <Route path='/about' element={<><AboutPage/></>}/>
-        <Route path='/contactus' element={<><ContactUs/></>}/>
+        <Route path='/about' element={<><Navbar/><AboutPage/></>}/>
+        <Route path='/contactus' element={<><Navbar/><ContactUs/></>}/>
+        <Route path='/payment' element={<><Navbar/><PaymentPage/></>}/>
       </Routes>
       <Footer/>
     </Router>
