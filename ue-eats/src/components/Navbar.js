@@ -145,7 +145,7 @@ const Navbar = () => {
           >
             Signup
           </NavLink>
-          <NavLink
+          {/* <NavLink
             to="/Contactt"
             className={({ isActive }) =>
               isActive
@@ -154,7 +154,7 @@ const Navbar = () => {
             }
           >
             Order
-          </NavLink>
+          </NavLink> */}
           <NavLink
             to="/contactus"
             className={({ isActive }) =>

@@ -1,6 +1,19 @@
-
 // import React, { useState, useEffect } from "react";
-// import { FiPlusCircle, FiTrash2, FiLogOut, FiList } from "react-icons/fi";
+// import { useNavigate } from "react-router-dom";
+// import { 
+//   FiPlusCircle, 
+//   FiTrash2, 
+//   FiLogOut, 
+//   FiList, 
+//   FiMenu, 
+//   FiX,
+//   FiUser,
+//   FiChevronDown,
+//   FiChevronUp,
+//   FiEdit2
+// } from "react-icons/fi";
+// import { toast, ToastContainer } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
 
 // const AdminPanel = () => {
 //   const [items, setItems] = useState([]);
@@ -11,115 +24,280 @@
 //     Price: "",
 //     image: null,
 //   });
-//   const [loading, setLoading] = useState(false);
+//   const [loading, setLoading] = useState({
+//     delete: false,
+//     fetch: false,
+//     add: false
+//   });
 //   const [error, setError] = useState(null);
-//   const [activeSection, setActiveSection] = useState("add-item"); // State to track active section
+//   const [activeSection, setActiveSection] = useState("items-list");
+//   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+//   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+//   const [selectedItem, setSelectedItem] = useState(null);
+//   const [showDeleteModal, setShowDeleteModal] = useState(false);
+//   const navigate = useNavigate();
 
-//   const API_BASE_URL = "http://localhost:5000/api/auth/item";
+//   const API_BASE_URL = "http://localhost:5000/api/auth";
 
-//   // Fetch items from the backend
 //   const fetchItems = async () => {
 //     try {
-//       const response = await fetch("http://localhost:5000/api/auth/items");
+//       setLoading(prev => ({...prev, fetch: true}));
+//       const response = await fetch(`${API_BASE_URL}/items`);
 //       const json = await response.json();
 //       if (json.Success) {
 //         setItems(json.items);
+//         toast.success("Items loaded successfully");
 //       } else {
-//         console.error("Failed to fetch items:", json.message);
+//         setError(json.message || "Failed to fetch items");
+//         toast.error(json.message || "Failed to fetch items");
 //       }
 //     } catch (err) {
-//       console.error("Error fetching items:", err.message || err);
+//       setError(err.message || "Error fetching items");
+//       toast.error(err.message || "Error fetching items");
+//     } finally {
+//       setLoading(prev => ({...prev, fetch: false}));
 //     }
 //   };
 
-//   // Handle form input changes
-//   const onChange = (e) => {
-//     if (e.target.name === "image") {
-//       const file = e.target.files[0];
-//       setCredentials({ ...credentials, image: file });
-//     } else {
-//       setCredentials({ ...credentials, [e.target.name]: e.target.value });
-//     }
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setCredentials(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
 //   };
 
-//   // Submit form data to add an item
-//   const handleSubmit = async (e) => {
+//   const handleImageChange = (e) => {
+//     setCredentials(prev => ({
+//       ...prev,
+//       image: e.target.files[0]
+//     }));
+//   };
+
+//   const handleAddItem = async (e) => {
 //     e.preventDefault();
-//     setLoading(true);
-//     setError(null);
-
-//     const { name, role, intro, Price, image } = credentials;
-
-//     if (!name || !role || !intro || !Price || !image) {
-//       setError("All fields are required");
-//       setLoading(false);
-//       return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append("name", name);
-//     formData.append("role", role);
-//     formData.append("intro", intro);
-//     formData.append("Price", Price);
-//     formData.append("image", image);
-
 //     try {
-//       const response = await fetch(API_BASE_URL, {
+//       setLoading(prev => ({...prev, add: true}));
+//       const formData = new FormData();
+//       formData.append('name', credentials.name);
+//       formData.append('role', credentials.role);
+//       formData.append('intro', credentials.intro);
+//       formData.append('Price', credentials.Price);
+//       if (credentials.image) {
+//         formData.append('image', credentials.image);
+//       }
+
+//       const response = await fetch(`${API_BASE_URL}/item`, {
 //         method: "POST",
 //         body: formData,
 //       });
+
 //       const json = await response.json();
+
 //       if (json.Success) {
-//         alert("Item added successfully!");
+//         toast.success("Item added successfully");
+//         setCredentials({
+//           name: "",
+//           role: "",
+//           intro: "",
+//           Price: "",
+//           image: null,
+//         });
 //         fetchItems();
-//         setCredentials({ name: "", role: "", intro: "", Price: "", image: null });
+//         setActiveSection("items-list");
 //       } else {
 //         setError(json.message || "Failed to add item");
+//         toast.error(json.message || "Failed to add item");
 //       }
 //     } catch (err) {
-//       setError("An error occurred. Please try again.");
+//       setError(err.message || "Error adding item");
+//       toast.error(err.message || "Error adding item");
 //     } finally {
-//       setLoading(false);
+//       setLoading(prev => ({...prev, add: false}));
 //     }
 //   };
 
-//   // Delete an item
-//   const handleDeleteItem = async (id) => {
-//     setLoading(true);
+//   const openDeleteModal = (item) => {
+//     setSelectedItem(item);
+//     setShowDeleteModal(true);
+//   };
+
+//   const deleteItem = async () => {
+//     if (!selectedItem) return;
+    
 //     try {
-//       const response = await fetch(`${API_BASE_URL}/${id}`, {
+//       setLoading(prev => ({...prev, delete: true}));
+//       const response = await fetch(`${API_BASE_URL}/item/${selectedItem._id}`, {
 //         method: "DELETE",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
 //       });
-//       const json = await response.json();
-//       if (json.Success) {
-//         alert("Item deleted successfully!");
-//         fetchItems();
-//       } else {
-//         setError(json.message || "Failed to delete item");
+
+//       const data = await response.json();
+
+//       if (!response.ok) {
+//         throw new Error(data.message || 'Failed to delete item');
 //       }
-//     } catch (err) {
-//       console.error("Error deleting item:", err.message || err);
+
+//       if (data.Success) {
+//         setItems(prevItems => prevItems.filter(item => item._id !== selectedItem._id));
+//         toast.success("Item deleted successfully");
+//       } else {
+//         throw new Error(data.message || 'Failed to delete item');
+//       }
+//     } catch (error) {
+//       console.error("Delete error:", error);
+//       toast.error(error.message || "Error deleting item");
+//       fetchItems();
 //     } finally {
-//       setLoading(false);
+//       setLoading(prev => ({...prev, delete: false}));
+//       setShowDeleteModal(false);
+//       setSelectedItem(null);
 //     }
 //   };
 
-//   // Load items on component mount
 //   useEffect(() => {
 //     fetchItems();
 //   }, []);
 
+//   const handleLogout = () => {
+//     console.log("Admin logged out");
+//     navigate("/login");
+//   };
+
+//   const handleAddItemClick = () => {
+//     navigate("/add");
+//   };
+
 //   return (
-//     <div className="flex h-screen">
+//     <div 
+//       className="flex h-screen flex-col md:flex-row bg-cover bg-center"
+//       style={{ backgroundImage: "url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')" }}
+//     >
+//       {/* Overlay for background image */}
+//       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+//       <ToastContainer position="top-right" autoClose={3000} />
+
+//       {/* Delete Confirmation Modal */}
+//       {showDeleteModal && (
+//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//           <div className="bg-white rounded-lg p-6 w-full max-w-md">
+//             <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
+//             <p className="mb-6">Are you sure you want to delete <span className="font-bold">"{selectedItem?.name}"</span>? This action cannot be undone.</p>
+//             <div className="flex justify-end space-x-3">
+//               <button
+//                 onClick={() => setShowDeleteModal(false)}
+//                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+//                 disabled={loading.delete}
+//               >
+//                 Cancel
+//               </button>
+//               <button
+//                 onClick={deleteItem}
+//                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center"
+//                 disabled={loading.delete}
+//               >
+//                 {loading.delete ? (
+//                   <>
+//                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+//                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+//                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+//                     </svg>
+//                     Deleting...
+//                   </>
+//                 ) : (
+//                   "Delete"
+//                 )}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
 //       {/* Sidebar */}
-//       <div className="w-64 bg-gray-800 text-white p-6 flex flex-col">
+//       <div
+//         className={`fixed inset-y-0 left-0 z-40 bg-gray-800 text-white w-64 p-6 transform ${
+//           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+//         } transition-transform md:relative md:translate-x-0 md:w-64`}
+//       >
+//         {/* Close Button (Visible on Mobile) */}
+//         <div className="md:hidden flex justify-end">
+//           <button
+//             className="text-white text-2xl"
+//             onClick={() => setIsSidebarOpen(false)}
+//           >
+//             <FiX />
+//           </button>
+//         </div>
+
+//         {/* Profile Section */}
+//         <div className="flex items-center mb-8 p-4 bg-gray-700 rounded-lg">
+//           <div className="relative">
+//             <div 
+//               className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center cursor-pointer"
+//               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+//             >
+//               <FiUser className="text-2xl" />
+//             </div>
+//             {isProfileDropdownOpen && (
+//               <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+//                 <div className="py-1">
+//                   <button
+//                     onClick={() => {
+//                       setActiveSection("items-list");
+//                       setIsProfileDropdownOpen(false);
+//                       setIsSidebarOpen(false);
+//                     }}
+//                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+//                   >
+//                     <FiList className="inline mr-2" />
+//                     Items List
+//                   </button>
+//                   <button
+//                     onClick={() => {
+//                       handleAddItemClick();
+//                       setIsProfileDropdownOpen(false);
+//                       setIsSidebarOpen(false);
+//                     }}
+//                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+//                   >
+//                     <FiPlusCircle className="inline mr-2" />
+//                     Add Item
+//                   </button>
+//                   <button
+//                     onClick={handleLogout}
+//                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+//                   >
+//                     <FiLogOut className="inline mr-2" />
+//                     Logout
+//                   </button>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//           <div className="ml-4">
+//             <p className="font-semibold">Admin User</p>
+//             <p className="text-gray-300 text-sm">Administrator</p>
+//           </div>
+//           <button 
+//             className="ml-auto text-gray-300"
+//             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+//           >
+//             {isProfileDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
+//           </button>
+//         </div>
+
 //         <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
 //         <ul>
 //           <li className="mb-4">
 //             <button
-//               onClick={() => setActiveSection("add-item")}
+//               onClick={() => {
+//                 setActiveSection("add-item");
+//                 setIsSidebarOpen(false);
+//               }}
 //               className={`flex items-center text-gray-200 hover:text-white ${
-//                 activeSection === "add-item" ? "font-bold" : ""
+//                 activeSection === "add-item" ? "font-bold text-white" : ""
 //               }`}
 //             >
 //               <FiPlusCircle className="mr-2" />
@@ -128,9 +306,12 @@
 //           </li>
 //           <li className="mb-4">
 //             <button
-//               onClick={() => setActiveSection("items-list")}
+//               onClick={() => {
+//                 setActiveSection("items-list");
+//                 setIsSidebarOpen(false);
+//               }}
 //               className={`flex items-center text-gray-200 hover:text-white ${
-//                 activeSection === "items-list" ? "font-bold" : ""
+//                 activeSection === "items-list" ? "font-bold text-white" : ""
 //               }`}
 //             >
 //               <FiList className="mr-2" />
@@ -139,7 +320,7 @@
 //           </li>
 //           <li className="mt-auto">
 //             <button
-//               onClick={() => console.log("Admin logged out")}
+//               onClick={handleLogout}
 //               className="flex items-center text-gray-200 hover:text-white"
 //             >
 //               <FiLogOut className="mr-2" />
@@ -149,115 +330,143 @@
 //         </ul>
 //       </div>
 
+//       {/* Mobile Sidebar Toggle */}
+//       <button
+//         className="fixed top-4 left-4 md:hidden bg-gray-800 text-white p-2 rounded-md z-40"
+//         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+//       >
+//         <FiMenu />
+//       </button>
+
 //       {/* Main Content */}
-//       <div className="flex-1 bg-gray-100 p-8 overflow-auto">
-//         <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+//       <div
+//         className={`flex-1 p-6 transition-all duration-300 relative z-10 ${
+//           isSidebarOpen ? "mt-20 md:mt-0" : "mt-4 md:mt-0"
+//         }`}
+//       >
+//         <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-xl shadow-xl p-6">
+//           <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
 
-//         {/* Conditionally Render Sections */}
-//         {activeSection === "add-item" && (
-//           <div className="bg-white shadow rounded p-6 mb-8">
-//             <h2 className="text-xl font-semibold mb-4">Add New Item</h2>
-//             {error && <p className="text-red-500 mb-4">{error}</p>}
-//             <form onSubmit={handleSubmit} className="space-y-4">
-//               <div>
-//                 <label className="block text-gray-700">Name</label>
-//                 <input
-//                   type="text"
-//                   name="name"
+//           {/* Add Item Section */}
+//           {activeSection === "add-item" && (
+//             <div className="bg-white shadow rounded p-6">
+//               <h2 className="text-xl font-semibold mb-4">Add New Item</h2>
+//               {error && <p className="text-red-500 mb-4">{error}</p>}
+//               <form className="space-y-4" onSubmit={handleAddItem}>
+//                 <input 
+//                   type="text" 
+//                   name="name" 
+//                   placeholder="Name" 
+//                   className="w-full border p-2 rounded" 
 //                   value={credentials.name}
-//                   onChange={onChange}
-//                   className="w-full border rounded p-2"
-//                   required
+//                   onChange={handleInputChange}
+//                   required 
 //                 />
-//               </div>
-//               <div>
-//                 <label className="block text-gray-700">Role</label>
-//                 <input
-//                   type="text"
-//                   name="role"
+//                 <input 
+//                   type="text" 
+//                   name="role" 
+//                   placeholder="Role" 
+//                   className="w-full border p-2 rounded" 
 //                   value={credentials.role}
-//                   onChange={onChange}
-//                   className="w-full border rounded p-2"
-//                   required
+//                   onChange={handleInputChange}
+//                   required 
 //                 />
-//               </div>
-//               <div>
-//                 <label className="block text-gray-700">Intro</label>
-//                 <textarea
-//                   name="intro"
+//                 <textarea 
+//                   name="intro" 
+//                   placeholder="Intro" 
+//                   className="w-full border p-2 rounded" 
 //                   value={credentials.intro}
-//                   onChange={onChange}
-//                   className="w-full border rounded p-2"
-//                   required
-//                 ></textarea>
-//               </div>
-//               <div>
-//                 <label className="block text-gray-700">Price</label>
-//                 <input
-//                   type="number"
-//                   name="Price"
+//                   onChange={handleInputChange}
+//                   required 
+//                 />
+//                 <input 
+//                   type="number" 
+//                   name="Price" 
+//                   placeholder="Price" 
+//                   className="w-full border p-2 rounded" 
 //                   value={credentials.Price}
-//                   onChange={onChange}
-//                   className="w-full border rounded p-2"
-//                   required
+//                   onChange={handleInputChange}
+//                   required 
 //                 />
-//               </div>
-//               <div>
-//                 <label className="block text-gray-700">Upload Image</label>
-//                 <input
-//                   type="file"
-//                   name="image"
-//                   onChange={onChange}
-//                   accept="image/*"
-//                   className="w-full border rounded p-2"
-//                   required
+//                 <input 
+//                   type="file" 
+//                   name="image" 
+//                   accept="image/*" 
+//                   className="w-full border p-2 rounded" 
+//                   onChange={handleImageChange}
 //                 />
-//               </div>
-//               <button
-//                 type="submit"
-//                 className={`w-full bg-blue-600 text-white py-2 rounded ${
-//                   loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-//                 }`}
-//                 disabled={loading}
-//               >
-//                 {loading ? "Submitting..." : "Add Item"}
-//               </button>
-//             </form>
-//           </div>
-//         )}
+//                 <button 
+//                   type="submit" 
+//                   className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+//                   disabled={loading.add}
+//                 >
+//                   {loading.add ? "Adding..." : "Add Item"}
+//                 </button>
+//               </form>
+//             </div>
+//           )}
 
-//         {activeSection === "items-list" && (
-//           <div className="bg-white shadow rounded p-6">
-//             <h2 className="text-xl font-semibold mb-4">Items List</h2>
-//             <table className="w-full border-collapse border border-gray-300">
-//               <thead className="bg-gray-100">
-//                 <tr>
-//                   <th className="p-3 border">Name</th>
-//                   <th className="p-3 border">Role</th>
-//                   <th className="p-3 border">Price</th>
-//                   <th className="p-3 border">Actions</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {items.map((item) => (
-//                   <tr key={item._id}>
-//                     <td className="p-3 border">{item.name}</td>
-//                     <td className="p-3 border">{item.role}</td>
-//                     <td className="p-3 border">Rs.{item.Price}</td>
-//                     <td className="p-3 border">
-//                       <button
-//                         onClick={() => handleDeleteItem(item._id)}
-//                         className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-//                       >
-//                         <FiTrash2 />
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
+//           {/* Items List Section */}
+//           {activeSection === "items-list" && (
+//             <div>
+//               <div className="flex justify-between items-center mb-6">
+//                 <h2 className="text-xl font-semibold text-gray-800">Items List</h2>
+//                 <button
+//                   onClick={() => setActiveSection("add-item")}
+//                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center transition-colors"
+//                 >
+//                   <FiPlusCircle className="mr-2" />
+//                   Add New Item
+//                 </button>
+//               </div>
+              
+//               {loading.fetch ? (
+//                 <div className="flex justify-center items-center h-64">
+//                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+//                 </div>
+//               ) : (
+//                 <div className="overflow-x-auto">
+//                   <table className="w-full border-collapse">
+//                     <thead className="bg-gray-100">
+//                       <tr>
+//                         <th className="p-3 text-left text-gray-700 font-medium">Name</th>
+//                         <th className="p-3 text-left text-gray-700 font-medium">Role</th>
+//                         <th className="p-3 text-left text-gray-700 font-medium">Price</th>
+//                         <th className="p-3 text-left text-gray-700 font-medium">Actions</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody className="divide-y divide-gray-200">
+//                       {items.map((item) => (
+//                         <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+//                           <td className="p-3 text-gray-800">{item.name}</td>
+//                           <td className="p-3 text-gray-800">{item.role}</td>
+//                           <td className="p-3 text-gray-800">Rs.{item.Price}</td>
+//                           <td className="p-3 flex space-x-2">
+//                             <button 
+//                               className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
+//                               onClick={() => {
+//                                 // Add edit functionality here
+//                                 console.log("Edit item:", item._id);
+//                               }}
+//                             >
+//                               <FiEdit2 />
+//                             </button>
+//                             <button 
+//                               className="p-2 text-red-600 hover:text-red-800 transition-colors"
+//                               onClick={() => openDeleteModal(item)}
+//                             >
+//                               <FiTrash2 />
+//                             </button>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//         </div>
 //       </div>
 //     </div>
 //   );
@@ -265,7 +474,21 @@
 
 // export default AdminPanel;
 import React, { useState, useEffect } from "react";
-import { FiPlusCircle, FiTrash2, FiLogOut, FiList, FiMenu, FiX } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { 
+  FiPlusCircle, 
+  FiTrash2, 
+  FiLogOut, 
+  FiList, 
+  FiMenu, 
+  FiX,
+  FiUser,
+  FiChevronDown,
+  FiChevronUp,
+  FiEdit2
+} from "react-icons/fi";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminPanel = () => {
   const [items, setItems] = useState([]);
@@ -276,24 +499,136 @@ const AdminPanel = () => {
     Price: "",
     image: null,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    delete: false,
+    fetch: false,
+    add: false
+  });
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState("add-item");
+  const [activeSection, setActiveSection] = useState("items-list");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const navigate = useNavigate();
 
-  const API_BASE_URL = "http://localhost:5000/api/auth/item";
+  const API_BASE_URL = "http://localhost:5000/api/auth";
 
   const fetchItems = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/items");
+      setLoading(prev => ({...prev, fetch: true}));
+      const response = await fetch(`${API_BASE_URL}/items`);
       const json = await response.json();
       if (json.Success) {
         setItems(json.items);
+        toast.success("Items loaded successfully");
       } else {
-        console.error("Failed to fetch items:", json.message);
+        setError(json.message || "Failed to fetch items");
+        toast.error(json.message || "Failed to fetch items");
       }
     } catch (err) {
-      console.error("Error fetching items:", err.message || err);
+      setError(err.message || "Error fetching items");
+      toast.error(err.message || "Error fetching items");
+    } finally {
+      setLoading(prev => ({...prev, fetch: false}));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    setCredentials(prev => ({
+      ...prev,
+      image: e.target.files[0]
+    }));
+  };
+
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(prev => ({...prev, add: true}));
+      const formData = new FormData();
+      formData.append('name', credentials.name);
+      formData.append('role', credentials.role);
+      formData.append('intro', credentials.intro);
+      formData.append('Price', credentials.Price);
+      if (credentials.image) {
+        formData.append('image', credentials.image);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/item`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await response.json();
+
+      if (json.Success) {
+        toast.success("Item added successfully");
+        setCredentials({
+          name: "",
+          role: "",
+          intro: "",
+          Price: "",
+          image: null,
+        });
+        fetchItems();
+        setActiveSection("items-list");
+      } else {
+        setError(json.message || "Failed to add item");
+        toast.error(json.message || "Failed to add item");
+      }
+    } catch (err) {
+      setError(err.message || "Error adding item");
+      toast.error(err.message || "Error adding item");
+    } finally {
+      setLoading(prev => ({...prev, add: false}));
+    }
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setShowDeleteModal(true);
+  };
+
+  const deleteItem = async () => {
+    if (!selectedItem) return;
+    
+    try {
+      setLoading(prev => ({...prev, delete: true}));
+      const response = await fetch(`${API_BASE_URL}/item/${selectedItem._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete item');
+      }
+
+      if (data.Success) {
+        setItems(prevItems => prevItems.filter(item => item._id !== selectedItem._id));
+        toast.success("Item deleted successfully");
+      } else {
+        throw new Error(data.message || 'Failed to delete item');
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(error.message || "Error deleting item");
+      fetchItems();
+    } finally {
+      setLoading(prev => ({...prev, delete: false}));
+      setShowDeleteModal(false);
+      setSelectedItem(null);
     }
   };
 
@@ -301,11 +636,63 @@ const AdminPanel = () => {
     fetchItems();
   }, []);
 
+  const handleLogout = () => {
+    console.log("Admin logged out");
+    navigate("/login");
+  };
+
+  const handleAddItemClick = () => {
+    navigate("/add");
+  };
+
   return (
-    <div className="flex h-screen flex-col md:flex-row">
+    <div 
+      className="flex h-screen flex-col md:flex-row bg-cover bg-center"
+      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')" }}
+    >
+      {/* Overlay for background image */}
+      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">Are you sure you want to delete <span className="font-bold">"{selectedItem?.name}"</span>? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                disabled={loading.delete}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteItem}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center"
+                disabled={loading.delete}
+              >
+                {loading.delete ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-gray-800 text-white w-64 p-6 transform ${
+        className={`fixed inset-y-0 left-0 z-40 bg-gray-800 text-white w-64 p-6 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform md:relative md:translate-x-0 md:w-64`}
       >
@@ -319,16 +706,73 @@ const AdminPanel = () => {
           </button>
         </div>
 
+        {/* Profile Section */}
+        <div className="flex items-center mb-8 p-4 bg-gray-700 rounded-lg">
+          <div className="relative">
+            <div 
+              className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center cursor-pointer"
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+            >
+              <FiUser className="text-2xl" />
+            </div>
+            {isProfileDropdownOpen && (
+              <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setActiveSection("items-list");
+                      setIsProfileDropdownOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    <FiList className="inline mr-2" />
+                    Items List
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleAddItemClick();
+                      setIsProfileDropdownOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    <FiPlusCircle className="inline mr-2" />
+                    Add Item
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    <FiLogOut className="inline mr-2" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="ml-4">
+            <p className="font-semibold">Admin User</p>
+            <p className="text-gray-300 text-sm">Administrator</p>
+          </div>
+          <button 
+            className="ml-auto text-gray-300"
+            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+          >
+            {isProfileDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+        </div>
+
         <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
         <ul>
           <li className="mb-4">
             <button
               onClick={() => {
-                setActiveSection("add-item");
+                handleAddItemClick();
                 setIsSidebarOpen(false);
               }}
               className={`flex items-center text-gray-200 hover:text-white ${
-                activeSection === "add-item" ? "font-bold" : ""
+                activeSection === "add-item" ? "font-bold text-white" : ""
               }`}
             >
               <FiPlusCircle className="mr-2" />
@@ -342,7 +786,7 @@ const AdminPanel = () => {
                 setIsSidebarOpen(false);
               }}
               className={`flex items-center text-gray-200 hover:text-white ${
-                activeSection === "items-list" ? "font-bold" : ""
+                activeSection === "items-list" ? "font-bold text-white" : ""
               }`}
             >
               <FiList className="mr-2" />
@@ -351,7 +795,7 @@ const AdminPanel = () => {
           </li>
           <li className="mt-auto">
             <button
-              onClick={() => console.log("Admin logged out")}
+              onClick={handleLogout}
               className="flex items-center text-gray-200 hover:text-white"
             >
               <FiLogOut className="mr-2" />
@@ -363,7 +807,7 @@ const AdminPanel = () => {
 
       {/* Mobile Sidebar Toggle */}
       <button
-        className="fixed top-4 left-4 md:hidden bg-gray-800 text-white p-2 rounded-md"
+        className="fixed top-4 left-4 md:hidden bg-gray-800 text-white p-2 rounded-md z-40"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
         <FiMenu />
@@ -371,64 +815,77 @@ const AdminPanel = () => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 bg-gray-100 p-6 transition-all duration-300 ${
+        className={`flex-1 p-6 transition-all duration-300 relative z-10 ${
           isSidebarOpen ? "mt-20 md:mt-0" : "mt-4 md:mt-0"
         }`}
       >
-        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-xl shadow-xl p-6">
+          <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
 
-        {/* Add Item Section */}
-        {activeSection === "add-item" && (
-          <div className="bg-white shadow rounded p-6">
-            <h2 className="text-xl font-semibold mb-4">Add New Item</h2>
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            <form className="space-y-4">
-              <input type="text" name="name" placeholder="Name" className="w-full border p-2 rounded" required />
-              <input type="text" name="role" placeholder="Role" className="w-full border p-2 rounded" required />
-              <textarea name="intro" placeholder="Intro" className="w-full border p-2 rounded" required />
-              <input type="number" name="Price" placeholder="Price" className="w-full border p-2 rounded" required />
-              <input type="file" name="image" accept="image/*" className="w-full border p-2 rounded" required />
-              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-                {loading ? "Submitting..." : "Add Item"}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Items List Section */}
-        {activeSection === "items-list" && (
-          <div className="bg-white shadow rounded p-6">
-            <h2 className="text-xl font-semibold mb-4">Items List</h2>
-            <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 border">Name</th>
-                  <th className="p-2 border">Role</th>
-                  <th className="p-2 border">Price</th>
-                  <th className="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item._id}>
-                    <td className="p-2 border">{item.name}</td>
-                    <td className="p-2 border">{item.role}</td>
-                    <td className="p-2 border">Rs.{item.Price}</td>
-                    <td className="p-2 border">
-                      <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                        <FiTrash2 />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {/* Items List Section */}
+          {activeSection === "items-list" && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Items List</h2>
+                <button
+                  onClick={handleAddItemClick}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center transition-colors"
+                >
+                  <FiPlusCircle className="mr-2" />
+                  Add New Item
+                </button>
+              </div>
+              
+              {loading.fetch ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="p-3 text-left text-gray-700 font-medium">Name</th>
+                        <th className="p-3 text-left text-gray-700 font-medium">Role</th>
+                        <th className="p-3 text-left text-gray-700 font-medium">Price</th>
+                        <th className="p-3 text-left text-gray-700 font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {items.map((item) => (
+                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="p-3 text-gray-800">{item.name}</td>
+                          <td className="p-3 text-gray-800">{item.role}</td>
+                          <td className="p-3 text-gray-800">Rs.{item.Price}</td>
+                          <td className="p-3 flex space-x-2">
+                            <button 
+                              className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
+                              onClick={() => {
+                                // Add edit functionality here
+                                console.log("Edit item:", item._id);
+                              }}
+                            >
+                              <FiEdit2 />
+                            </button>
+                            <button 
+                              className="p-2 text-red-600 hover:text-red-800 transition-colors"
+                              onClick={() => openDeleteModal(item)}
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default AdminPanel;
-
