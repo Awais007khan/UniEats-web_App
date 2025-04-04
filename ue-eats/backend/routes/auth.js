@@ -161,12 +161,35 @@ router.delete('/item/:id', async (req, res) => {
     });
   }
 });
+// router.get('/orders', async (req, res) => {
+//   try {
+//       const orders = await Order.find();  // Fetch all orders
+//       res.status(200).json({ orders });  // Send the orders as a response
+//   } catch (error) {
+//       res.status(500).json({ message: 'Error fetching orders', error: error.message });
+//   }
+// });
 router.get('/orders', async (req, res) => {
   try {
-      const orders = await Order.find();  // Fetch all orders
-      res.status(200).json({ orders });  // Send the orders as a response
+    const orders = await Order.find().sort({ createdAt: -1 }); // Get all orders sorted by newest first
+    res.status(200).json({ 
+      success: true,
+      orders: orders.map(order => ({
+        _id: order._id,
+        UserName: order.UserName,
+        ItemName: order.ItemName,
+        DepartmentName: order.DepartmentName,
+        CurrentSemester: order.CurrentSemester,
+        RoomNumber: order.RoomNumber,
+        createdAt: order.createdAt
+      }))
+    });
   } catch (error) {
-      res.status(500).json({ message: 'Error fetching orders', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching orders',
+      error: error.message 
+    });
   }
 });
 
