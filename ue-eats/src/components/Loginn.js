@@ -11,7 +11,7 @@
 //     const handleSubmit = async (e) => {
 //         e.preventDefault();
 //         setLoading(true);
-//         setError(""); 
+//         setError("");
 
 //         if (!credentials.email || !credentials.password) {
 //             setError("Please fill in both email and password.");
@@ -42,8 +42,12 @@
 //             console.log(json);
 
 //             if (json.Success) {
-//                 localStorage.setItem('token', json.authtoken); 
-//                 navigate("/team"); 
+//                 localStorage.setItem('token', json.authtoken);
+
+//                 // ✅ Dispatch event so Navbar can update login status
+//                 window.dispatchEvent(new Event("loginStatusChanged"));
+
+//                 navigate("/team");
 //             } else {
 //                 setError("Invalid credentials, please try again.");
 //             }
@@ -64,7 +68,7 @@
 
 //     return (
 //         <div
-//             className="flex flex-col h-screen  bg-cover bg-center"
+//             className="flex flex-col h-screen bg-cover bg-center"
 //             style={{
 //                 backgroundImage: `url(${image})`,
 //             }}
@@ -115,6 +119,7 @@
 //                         <p className="text-sm text-gray-600">
 //                             Don't have an account?{' '}
 //                             <button
+//                                 type="button"
 //                                 onClick={handleRegisterClick}
 //                                 className="text-purple-700 hover:text-purple-800 font-bold"
 //                             >
@@ -173,12 +178,13 @@ function Loginn() {
             console.log(json);
 
             if (json.Success) {
-                localStorage.setItem('token', json.authtoken);
+                localStorage.setItem('token', json.authtoken); // Store token
 
-                // ✅ Dispatch event so Navbar can update login status
+                // Debugging line to ensure token is stored
+                console.log("Token stored:", json.authtoken);
+
                 window.dispatchEvent(new Event("loginStatusChanged"));
-
-                navigate("/team");
+                navigate("/team"); // Redirect after successful login
             } else {
                 setError("Invalid credentials, please try again.");
             }
@@ -265,3 +271,4 @@ function Loginn() {
 }
 
 export default Loginn;
+
