@@ -1,25 +1,3 @@
-// import React, { createContext, useState, useContext } from "react";
-
-// // Create Context
-// const CartContext = createContext();
-
-// // Create a custom hook for easy access
-// export const useCart = () => useContext(CartContext);
-
-// // Create Provider Component
-// export const CartProvider = ({ children }) => {
-//   const [cartItems, setCartItems] = useState([]);
-
-//   // Add item to the cart
-//   const addToCart = (item) => {
-//     setCartItems((prevItems) => [...prevItems, item]);
-//   };
-
-//   return (
-//     <CartContext.Provider value={{ cartItems, addToCart }}>
-//       {children}
-//     </CartContext.Provider>
-//   );}
 import React, { createContext, useState, useEffect,useContext } from "react";
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -68,53 +46,3 @@ export const CartProvider = ({ children }) => {
       </CartContext.Provider>
     );
   };
-  // };
-//   import React, { createContext, useState, useContext } from "react";
-
-//   const CartContext = createContext();
-  
-//   export const useCart = () => useContext(CartContext);
-  
-//   export const CartProvider = ({ children }) => {
-//     const [cartItems, setCartItems] = useState([]);
-  
-//     // Add item to cart
-//     const addToCart = (item) => {
-//       const existingItem = cartItems.find((cartItem) => cartItem.name === item.name);
-  
-//       if (existingItem) {
-//         // If item exists, increase the quantity
-//         setCartItems(
-//           cartItems.map((cartItem) =>
-//             cartItem.name === item.name
-//               ? { ...cartItem, quantity: cartItem.quantity + 1 }
-//               : cartItem
-//           )
-//         );
-//       } else {
-//         // If item doesn't exist, add it to the cart
-//         setCartItems([...cartItems, item]);
-//       }
-//     };
-  
-//     // Remove item from cart
-//     const removeFromCart = (itemName) => {
-//       setCartItems(cartItems.filter((item) => item.name !== itemName));
-//     };
-  
-//     // Update item quantity
-//     const updateQuantity = (itemName, newQuantity) => {
-//       setCartItems(
-//         cartItems.map((item) =>
-//           item.name === itemName ? { ...item, quantity: newQuantity } : item
-//         )
-//       );
-//     };
-  
-//     return (
-//       <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity }}>
-//         {children}
-//       </CartContext.Provider>
-//     );
-//   };
-  

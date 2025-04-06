@@ -1,18 +1,30 @@
-// import React, { useState } from "react";
-// import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
+// import React, { useState, useEffect } from "react";
+// import { NavLink, useNavigate } from "react-router-dom";
 // import logo from "./Images/logo.png";
 
 // const Navbar = () => {
-//   const [isMenuOpen, setIsMenuOpen] = useState(false); // State for toggling the menu
-//   const navigate = useNavigate(); // React Router's navigation hook
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+//   const navigate = useNavigate();
+
+//   // Check login status when component mounts
+//   useEffect(() => {
+//     const token = localStorage.getItem('token'); // Or your auth token
+//     setIsLoggedIn(!!token); // Set to true if token exists
+//   }, []);
 
 //   const handleShopClick = () => {
-//     navigate("/AddCart"); // Navigate to AddCart when shopping icon is clicked
+//     navigate("/AddCart");
 //   };
 
 //   const handleLogout = () => {
+//     // Clear authentication data
+//     localStorage.removeItem('token');
+//     // Update state
+//     setIsLoggedIn(false);
+//     // Navigate to home or login page
+//     navigate("/hero");
 //     console.log("User logged out");
-//     // Add logout logic here
 //   };
 
 //   return (
@@ -24,7 +36,7 @@
 //           <span className="text-white font-bold text-xl">UNI EATS</span>
 //         </div>
 
-//         {/* Hamburger Menu Button (visible on small screens) */}
+//         {/* Hamburger Menu Button */}
 //         <button
 //           onClick={() => setIsMenuOpen(!isMenuOpen)}
 //           className="text-white md:hidden focus:outline-none"
@@ -45,7 +57,7 @@
 //           </svg>
 //         </button>
 
-//         {/* Navigation Links (responsive) */}
+//         {/* Navigation Links */}
 //         <div
 //           className={`${
 //             isMenuOpen ? "block" : "hidden"
@@ -61,56 +73,33 @@
 //           >
 //             Home
 //           </NavLink>
-//           {/* <NavLink
-//             to="/beforeorder"
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "text-blue-400 px-3 block"
-//                 : "text-white px-3 block hover:text-gray-400"
-//             }
-//           >
-//             Items
-//           </NavLink> */}
-//           {/* <NavLink
-//             to="/Comment"
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "text-blue-400 px-3 block"
-//                 : "text-white px-3 block hover:text-gray-400"
-//             }
-//           >
-//             Comments
-//           </NavLink> */}
-//           <NavLink
-//             to="/Loginn"
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "text-blue-400 px-3 block"
-//                 : "text-white px-3 block hover:text-gray-400"
-//             }
-//           >
-//             Login
-//           </NavLink>
-//           <NavLink
-//             to="/Singupp"
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "text-blue-400 px-3 block"
-//                 : "text-white px-3 block hover:text-gray-400"
-//             }
-//           >
-//             Signup
-//           </NavLink>
-//           {/* <NavLink
-//             to="/Contactt"
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "text-blue-400 px-3 block"
-//                 : "text-white px-3 block hover:text-gray-400"
-//             }
-//           >
-//             Order
-//           </NavLink> */}
+
+//           {/* Conditional rendering based on login state */}
+//           {!isLoggedIn ? (
+//             <>
+//               <NavLink
+//                 to="/Loginn"
+//                 className={({ isActive }) =>
+//                   isActive
+//                     ? "text-blue-400 px-3 block"
+//                     : "text-white px-3 block hover:text-gray-400"
+//                 }
+//               >
+//                 Login
+//               </NavLink>
+//               <NavLink
+//                 to="/Singupp"
+//                 className={({ isActive }) =>
+//                   isActive
+//                     ? "text-blue-400 px-3 block"
+//                     : "text-white px-3 block hover:text-gray-400"
+//                 }
+//               >
+//                 Signup
+//               </NavLink>
+//             </>
+//           ) : null}
+
 //           <NavLink
 //             to="/contactus"
 //             className={({ isActive }) =>
@@ -142,38 +131,41 @@
 //             About
 //           </NavLink>
 
-//           {/* Shopping Cart Icon */}
-//           <button
-//             onClick={handleShopClick}
-//             className="text-white relative hover:text-gray-400 focus:outline-none"
-//           >
-//             <svg
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="none"
-//               viewBox="0 0 24 24"
-//               strokeWidth={2}
-//               stroke="currentColor"
-//               className="w-6 h-6"
+//           {/* Shopping Cart Icon - shown only when logged in */}
+//           {isLoggedIn && (
+//             <button
+//               onClick={handleShopClick}
+//               className="text-white relative hover:text-gray-400 focus:outline-none"
 //             >
-//               <path
-//                 strokeLinecap="round"
-//                 strokeLinejoin="round"
-//                 d="M3 3h2l.4 2M7 13h10l1.4-7H6.6M5 21a1 1 0 100-2 1 1 0 000 2zm12 0a1 1 0 100-2 1 1 0 000 2z"
-//               />
-//             </svg>
-//             {/* Cart item count badge */}
-//             <span className="absolute top-0 right-0 text-xs bg-red-600 text-white rounded-full px-2">
-//               3
-//             </span>
-//           </button>
+//               <svg
+//                 xmlns="http://www.w3.org/2000/svg"
+//                 fill="none"
+//                 viewBox="0 0 24 24"
+//                 strokeWidth={2}
+//                 stroke="currentColor"
+//                 className="w-6 h-6"
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   d="M3 3h2l.4 2M7 13h10l1.4-7H6.6M5 21a1 1 0 100-2 1 1 0 000 2zm12 0a1 1 0 100-2 1 1 0 000 2z"
+//                 />
+//               </svg>
+//               <span className="absolute top-0 right-0 text-xs bg-red-600 text-white rounded-full px-2">
+//                 3
+//               </span>
+//             </button>
+//           )}
 
-//           {/* Logout Button */}
-//           <button
-//             onClick={handleLogout}
-//             className="bg-red-600 text-white px-4 py-2 rounded-md block mt-4 md:mt-0 hover:bg-red-700"
-//           >
-//             Logout
-//           </button>
+//           {/* Logout Button - shown only when logged in */}
+//           {isLoggedIn && (
+//             <button
+//               onClick={handleLogout}
+//               className="bg-red-600 text-white px-4 py-2 rounded-md block mt-4 md:mt-0 hover:bg-red-700"
+//             >
+//               Logout
+//             </button>
+//           )}
 //         </div>
 //       </div>
 //     </nav>
@@ -187,13 +179,24 @@ import logo from "./Images/logo.png";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  // Check login status when component mounts
+  // Check login status and listen for custom loginStatusChanged events
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Or your auth token
-    setIsLoggedIn(!!token); // Set to true if token exists
+    const checkLogin = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    checkLogin(); // Initial check on mount
+
+    // Listen for login/logout events
+    window.addEventListener('loginStatusChanged', checkLogin);
+
+    return () => {
+      window.removeEventListener('loginStatusChanged', checkLogin);
+    };
   }, []);
 
   const handleShopClick = () => {
@@ -201,11 +204,9 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    // Clear authentication data
     localStorage.removeItem('token');
-    // Update state
-    setIsLoggedIn(false);
-    // Navigate to home or login page
+    window.dispatchEvent(new Event('loginStatusChanged')); // Notify other components
+    setIsLoggedIn(false); // Update local state immediately
     navigate("/hero");
     console.log("User logged out");
   };
