@@ -161,6 +161,42 @@ router.delete('/item/:id', async (req, res) => {
     });
   }
 });
+router.put('/item/:id', async (req, res) => {
+  try {
+    const { name, role, intro, Price } = req.body;
+    
+    // Find the item by ID and update it
+    const updatedItem = await Item.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        role,
+        intro,
+        Price
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedItem) {
+      return res.status(404).json({ 
+        Success: false, 
+        message: 'Item not found' 
+      });
+    }
+
+    res.json({ 
+      Success: true, 
+      message: 'Item updated successfully',
+      item: updatedItem 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      Success: false, 
+      message: 'Server error' 
+    });
+  }
+});
 // router.get('/orders', async (req, res) => {
 //   try {
 //       const orders = await Order.find();  // Fetch all orders

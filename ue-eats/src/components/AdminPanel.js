@@ -19,18 +19,12 @@ import 'react-toastify/dist/ReactToastify.css';
 const AdminPanel = () => {
   const [items, setItems] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [credentials, setCredentials] = useState({
-    name: "",
-    role: "",
-    intro: "",
-    Price: "",
-    image: null,
-  });
   const [loading, setLoading] = useState({
     delete: false,
     fetch: false,
     add: false,
-    fetchOrders: false
+    fetchOrders: false,
+    update: false
   });
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState("items-list");
@@ -38,6 +32,14 @@ const AdminPanel = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    role: "",
+    intro: "",
+    Price: "",
+    image: null
+  });
   const navigate = useNavigate();
 
   const API_BASE_URL = "http://localhost:5000/api/auth";
@@ -116,6 +118,57 @@ const AdminPanel = () => {
     } finally {
       setLoading(prev => ({...prev, delete: false}));
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleEditClick = (item) => {
+    setSelectedItem(item);
+    setEditFormData({
+      name: item.name,
+      role: item.role,
+      intro: item.intro || "",
+      Price: item.Price,
+      image: null
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleUpdateItem = async () => {
+    try {
+      setLoading(prev => ({...prev, update: true}));
+      const response = await fetch(`${API_BASE_URL}/item/${selectedItem._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update item');
+      }
+
+      if (data.Success) {
+        toast.success("Item updated successfully");
+        fetchItems();
+        setShowEditModal(false);
+      } else {
+        throw new Error(data.message || 'Failed to update item');
+      }
+    } catch (err) {
+      toast.error(err.message || "Error updating item");
+    } finally {
+      setLoading(prev => ({...prev, update: false}));
     }
   };
 
@@ -377,10 +430,7 @@ const AdminPanel = () => {
                           <td className="p-3 flex space-x-2">
                             <button 
                               className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors"
-                              onClick={() => {
-                                // Add edit functionality here
-                                console.log("Edit item:", item._id);
-                              }}
+                              onClick={() => handleEditClick(item)}
                             >
                               <FiEdit2 />
                             </button>
@@ -421,6 +471,72 @@ const AdminPanel = () => {
                 disabled={loading.delete}
               >
                 {loading.delete ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Edit Item</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={editFormData.name}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <input
+                  type="text"
+                  name="role"
+                  value={editFormData.role}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="intro"
+                  value={editFormData.intro}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                <input
+                  type="text"
+                  name="Price"
+                  value={editFormData.Price}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateItem}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                disabled={loading.update}
+              >
+                {loading.update ? 'Updating...' : 'Update'}
               </button>
             </div>
           </div>
